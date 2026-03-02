@@ -17,6 +17,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // ========== SCROLL PROGRESS BAR ==========
+    const scrollProgressBar = document.querySelector('.scroll-progress');
+    const backToTopBtn = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', () => {
+        // Update progress bar
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPercent = (scrollTop / docHeight) * 100;
+        scrollProgressBar.style.width = scrollPercent + '%';
+
+        // Show/hide back to top button
+        if (scrollTop > 500) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+
+    // Back to top button click handler
+    if (backToTopBtn) {
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
     // Form submission handling
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
@@ -69,26 +98,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add scroll animation for elements
+    // ========== ENHANCED SCROLL ANIMATIONS ==========
     const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px'
+        threshold: 0.15,
+        rootMargin: '0px 0px -50px 0px'
     };
 
     const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
+        entries.forEach((entry, index) => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+                // Add staggered delay for multiple elements
+                setTimeout(() => {
+                    entry.target.classList.add('scroll-visible');
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+                
+                // Optional: Stop observing after element is visible
+                // observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
 
-    // Observe project cards and skill categories
-    document.querySelectorAll('.project-card, .skill-category, .info-item').forEach(el => {
+    // Elements to observe for scroll animations
+    const elementsToObserve = document.querySelectorAll(
+        '.section-title, ' +
+        '.project-card, ' +
+        '.skill-category, ' +
+        '.info-item, ' +
+        '.gallery-img, ' +
+        '.contact-item, ' +
+        '.about-text, ' +
+        '.language-item, ' +
+        '.cert-item'
+    );
+
+    elementsToObserve.forEach(el => {
         el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
         observer.observe(el);
     });
 
@@ -111,24 +159,81 @@ document.addEventListener('DOMContentLoaded', function() {
         navLinks_active.forEach(link => {
             link.classList.remove('active');
             if (link.getAttribute('href').slice(1) === current) {
-                link.style.opacity = '0.6';
+                link.classList.add('active');
+                link.style.color = 'var(--primary-color)';
             } else {
-                link.style.opacity = '1';
+                link.style.color = 'white';
             }
         });
     });
 
-    // Parallax effect on hero section
+    // ========== ADVANCED PARALLAX EFFECT ==========
     const hero = document.querySelector('.hero');
     if (hero) {
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
             const circles = hero.querySelectorAll('.circle');
+            const heroContent = hero.querySelector('.hero-content');
+            const tuxContainer = hero.querySelector('.tux-container');
+            
+            // Parallax for circles
             circles.forEach((circle, index) => {
-                circle.style.transform = `translateY(${scrolled * 0.5 * (index + 1)}px)`;
+                const speed = 0.5 + (index * 0.1);
+                circle.style.transform = `translateY(${scrolled * speed}px)`;
             });
+
+            // Fade out hero content as user scrolls
+            if (scrolled < hero.clientHeight) {
+                const opacity = 1 - (scrolled / (hero.clientHeight * 0.5));
+                if (heroContent) {
+                    heroContent.style.opacity = Math.max(opacity, 0);
+                    heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
+                }
+                if (tuxContainer) {
+                    tuxContainer.style.opacity = Math.max(opacity, 0.3);
+                }
+            }
         });
     }
+
+    // ========== SCROLL-TRIGGERED ANIMATIONS FOR SECTIONS ==========
+    const sections_animated = document.querySelectorAll('section');
+    
+    sections_animated.forEach((section) => {
+        const observerSection = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('section-visible');
+                }
+            });
+        }, {
+            threshold: 0.05
+        });
+
+        observerSection.observe(section);
+    });
+
+    // Add animation class styling via inline
+    document.addEventListener('DOMContentLoaded', function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            section.section-visible {
+                animation: sectionSlide 0.8s ease-out;
+            }
+            
+            @keyframes sectionSlide {
+                from {
+                    opacity: 0.95;
+                    transform: translateY(0);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
 
     // Add animation to skill items on hover
     const skillItems = document.querySelectorAll('.skill-category li');
